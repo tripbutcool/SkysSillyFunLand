@@ -5,6 +5,12 @@
     margin-bottom: 50px;
   }
 
+.leftimg {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto; /* center the image on wider screens */
+}
+
   .corner-image {
     position: absolute;
     top: 0;
