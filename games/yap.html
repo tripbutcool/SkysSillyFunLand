@@ -168,13 +168,14 @@
     const message = document.getElementById('message').value;
 
     try {
-      const response = await fetch('https://skylandbackend.onrender.com/api/contact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ message })
-      });
+      const response = await fetch('https://script.google.com/macros/s/AKfycbyFbT7dhKFC0Hjg9JyNaavtx0ZxqE2MTrIxAPUfRcUsIICowwscgTXzR4IZ-oZoGkeG/exec', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({ message })
+});
+
 
       if (response.ok) {
         confirmation.style.display = 'block';
