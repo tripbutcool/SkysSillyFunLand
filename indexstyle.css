@@ -5,21 +5,17 @@
     margin-bottom: 50px;
   }
 
-.leftimg {
-  width: 100%;
-  max-width: 500px;
-  margin: 0 auto; /* center the image on wider screens */
-}
+
 
   .corner-image {
     position: absolute;
     top: 0;
     
-  width: 100%;
+  width: 25vw;
   max-width: 500px;
   height: auto;
 
-    z-index: 1000;
+    z-index: 1;
   }
 
   .top-left {
