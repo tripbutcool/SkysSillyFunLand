@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Skyle</title>
+  <style>
+    body {
+  font-family: Arial, sans-serif;
+  background: #FFB6C1;
+  color: #222;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 50px;
+}
+
+#board {
+  display: grid;
+  grid-template-rows: repeat(6, 1fr);
+  gap: 5px;
+  margin-bottom: 30px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 5px;
+}
+
+.tile {
+  width: 60px;
+  height: 60px;
+  border: 2px solid #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2em;
+  text-transform: uppercase;
+  background-color: white;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+  color: #000;
+}
+
+.tile.flip {
+  animation: flip 0.6s ease forwards;
+}
+
+@keyframes flip {
+  0% { transform: rotateX(0); }
+  50% { transform: rotateX(90deg); background-color: white; }
+  100% { transform: rotateX(0); }
+}
+
+.correct {
+  background-color: #6aaa64 !important;
+  border-color: #6aaa64;
+  color: white;
+}
+
+.present {
+  background-color: #c9b458 !important;
+  border-color: #c9b458;
+  color: white;
+}
+
+.absent {
+  background-color: #787c7e !important;
+  border-color: #787c7e;
+  color: white;
+}
+
+#keyboard {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 5px;
+  max-width: 600px;
+}
+
+.key {
+  padding: 15px;
+  background-color: #d3d6da;
+  border: none;
+  color: black;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.key.used.correct {
+  background-color: #6aaa64;
+  color: white;
+}
+
+.key.used.present {
+  background-color: #c9b458;
+  color: white;
+}
+
+.key.used.absent {
+  background-color: #787c7e;
+  color: white;
+}
+
+#message {
+  margin-top: 20px;
+  font-size: 1.2em;
+  color: #222;
+}
+
+.home-button {
+  position: absolute;
+  top: 30px;
+  left: 30px;
+  padding: 0.5rem 1rem;
+  font-size: 0.95rem;
+  background-color: #fff;
+  border: 2px solid #ddd;
+  color: #333;
+  font-size: 1.4rem;
+  border-radius: 12px;
+  text-decoration: none;
+  outline-width: 2px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  transition: background-color 0.2s;
+  z-index: 1000;
+}
+
+.home-button:hover {
+    background-color: #f0f0f0;
+}
+
+  </style>
+</head>
+<body>
+
+    <a href="../index.html" class="home-button">Return Home</a>
+
+<h1>Skyle</h1>
+<br>
+<div id="board"></div>
+<div id="keyboard"></div>
+<div id="message"></div>
+
+<script>
+  const wordList = ["babyy", "micro", "kitty", "ilovu", "silly", "drpep", "nutmg", "glorp", "tibbb", "hiiii", "puppy", "louie", "scoot", "loveu", "muahh"];
+  const targetWord = wordList[Math.floor(Math.random() * wordList.length)];
+  const board = document.getElementById("board");
+  const keyboard = document.getElementById("keyboard");
+  const message = document.getElementById("message");
+
+  let currentRow = 0;
+  let currentCol = 0;
+  let gameOver = false;
+
+  const keysLayout = [
+    ..."qwertyuiop",
+    ..."asdfghjkl",
+    "Enter", ..."zxcvbnm", "←"
+  ];
+
+  const keyStates = {};
+
+  // Create board
+  const rows = [];
+  for (let i = 0; i < 6; i++) {
+    const row = document.createElement("div");
+    row.className = "row";
+    const tiles = [];
+    for (let j = 0; j < 5; j++) {
+      const tile = document.createElement("div");
+      tile.className = "tile";
+      row.appendChild(tile);
+      tiles.push(tile);
+    }
+    board.appendChild(row);
+    rows.push(tiles);
+  }
+
+  // Create keyboard
+  keysLayout.forEach(k => {
+    const key = document.createElement("button");
+    key.className = "key";
+    key.textContent = k;
+    key.dataset.key = k;
+    key.addEventListener("click", () => handleKey(k));
+    keyboard.appendChild(key);
+  });
+
+  function handleKey(key) {
+    if (gameOver) return;
+
+    if (key === "Enter") {
+      if (currentCol === 5) {
+        const guess = rows[currentRow].map(tile => tile.textContent).join("").toLowerCase();
+        validateGuess(guess);
+      }
+    } else if (key === "←") {
+      if (currentCol > 0) {
+        currentCol--;
+        rows[currentRow][currentCol].textContent = "";
+      }
+    } else if (/^[a-zA-Z]$/.test(key)) {
+      if (currentCol < 5) {
+        rows[currentRow][currentCol].textContent = key;
+        currentCol++;
+      }
+    }
+  }
+
+  function validateGuess(guess) {
+    const result = Array(5).fill("absent");
+    const letterCount = {};
+
+    // Count target letters
+    for (let ch of targetWord) {
+      letterCount[ch] = (letterCount[ch] || 0) + 1;
+    }
+
+    // First pass: correct positions
+    for (let i = 0; i < 5; i++) {
+      if (guess[i] === targetWord[i]) {
+        result[i] = "correct";
+        letterCount[guess[i]]--;
+      }
+    }
+
+    // Second pass: present letters
+    for (let i = 0; i < 5; i++) {
+      if (result[i] === "correct") continue;
+      if (targetWord.includes(guess[i]) && letterCount[guess[i]] > 0) {
+        result[i] = "present";
+        letterCount[guess[i]]--;
+      }
+    }
+
+    // Apply result with animation
+    result.forEach((res, i) => {
+      const tile = rows[currentRow][i];
+      setTimeout(() => {
+        tile.classList.add("flip");
+        tile.classList.add(res);
+
+        updateKeyboardColor(guess[i], res);
+      }, i * 300);
+    });
+
+    if (guess === targetWord) {
+      gameOver = true;
+      message.textContent = "🎉 You guessed it! Reload to play again!";
+    } else if (currentRow === 5) {
+      gameOver = true;
+      message.textContent = `😢 The word was "${targetWord.toUpperCase()}" Reload to play again!`;
+    } else {
+      currentRow++;
+      currentCol = 0;
+    }
+  }
+
+  function updateKeyboardColor(letter, result) {
+    const btn = [...keyboard.children].find(k => k.dataset.key === letter);
+    if (!btn) return;
+    if (!btn.classList.contains("used") || result === "correct" ||
+        (result === "present" && !btn.classList.contains("correct"))) {
+      btn.classList.remove("correct", "present", "absent");
+      btn.classList.add("used", result);
+    }
+  }
+
+  // Handle physical keyboard input
+  document.addEventListener("keydown", (e) => {
+    const key = e.key;
+    if (key === "Backspace") handleKey("←");
+    else if (key === "Enter") handleKey("Enter");
+    else if (/^[a-zA-Z]$/.test(key)) handleKey(key.toLowerCase());
+  });
+</script>
+
+</body>
+</html>

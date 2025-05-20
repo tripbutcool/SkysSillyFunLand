@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Special Countdowns</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 2rem;
+      background-color: #FFB6C1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+    margin-bottom: 30px;
+    font-size: 3rem;
+    color: #222;
+  }
+
+  .home-button {
+  position: absolute;
+  top: 30px;
+  left: 30px;
+  padding: 0.5rem 1rem;
+  font-size: 0.95rem;
+  background-color: #fff;
+  border: 2px solid #ddd;
+  color: #333;
+  font-size: 1.4rem;
+  border-radius: 12px;
+  text-decoration: none;
+  outline-width: 2px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  transition: background-color 0.2s;
+  z-index: 1000;
+}
+
+.home-button:hover {
+    background-color: #f0f0f0;
+}
+
+    .timer {
+      background: #ffffff;
+      padding: 1.5rem 2rem;
+      margin: 1rem 0;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      max-width: 600px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .countup {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: #333;
+      margin-top: 0.5rem;
+    }
+
+    p {
+      margin: 0.5rem 0;
+    }
+  </style>
+</head>
+<body>
+
+    <a href="../index.html" class="home-button">Return Home</a>
+
+    <h1>Special Countdowns!</h1>
+
+  <!-- Countup -->
+  <div class="timer" data-start="2024-04-07T12:00:00Z" data-type="countup">
+    <p>It has been</p>
+    <div class="countup">Loading...</div>
+    <p>since we have started dating</p>
+  </div>
+
+  <!-- Recurring Countdown (Birthday or Holiday) -->
+  <div class="timer" data-recurring-date="09-28" data-type="recurring">
+    <p>Sky's Next Birthday:</p>
+    <div class="countup">Loading...</div>
+  </div>
+
+  <!-- Recurring Countdown (Birthday or Holiday) -->
+  <div class="timer" data-recurring-date="05-21" data-type="recurring">
+    <p>Trip's Next Birthday:</p>
+    <div class="countup">Loading...</div>
+  </div>
+
+  <script>
+    function formatDuration(seconds) {
+      let delta = seconds;
+
+      const years = Math.floor(delta / (365.25 * 24 * 3600));
+      delta -= years * 365.25 * 24 * 3600;
+
+      const months = Math.floor(delta / (30.44 * 24 * 3600));
+      delta -= months * 30.44 * 24 * 3600;
+
+      const days = Math.floor(delta / (24 * 3600));
+      delta -= days * 24 * 3600;
+
+      const hours = Math.floor(delta / 3600);
+      delta -= hours * 3600;
+
+      const minutes = Math.floor(delta / 60);
+      const secondsLeft = Math.floor(delta % 60);
+
+      const parts = [];
+      if (years) parts.push(`${years} year${years !== 1 ? 's' : ''}`);
+      if (months) parts.push(`${months} month${months !== 1 ? 's' : ''}`);
+      if (days) parts.push(`${days} day${days !== 1 ? 's' : ''}`);
+      if (hours) parts.push(`${hours} hour${hours !== 1 ? 's' : ''}`);
+      if (minutes) parts.push(`${minutes} minute${minutes !== 1 ? 's' : ''}`);
+      if (secondsLeft || parts.length === 0) parts.push(`${secondsLeft} second${secondsLeft !== 1 ? 's' : ''}`);
+
+      return parts.join(", ");
+    }
+
+    function getNextOccurrence(monthDayStr) {
+      const [month, day] = monthDayStr.split("-").map(Number);
+      const now = new Date();
+      const year = now.getFullYear();
+
+      const thisYear = new Date(Date.UTC(year, month - 1, day));
+      if (thisYear >= now) {
+        return thisYear;
+      } else {
+        return new Date(Date.UTC(year + 1, month - 1, day));
+      }
+    }
+
+    function updateAllTimers() {
+      const timers = document.querySelectorAll(".timer");
+
+      timers.forEach(timer => {
+        const output = timer.querySelector(".countup");
+        const type = timer.getAttribute("data-type");
+
+        const now = new Date();
+        let deltaSeconds = 0;
+
+        if (type === "countup") {
+          const start = new Date(timer.getAttribute("data-start"));
+          deltaSeconds = Math.floor((now - start) / 1000);
+        } else if (type === "countdown") {
+          const target = new Date(timer.getAttribute("data-start"));
+          deltaSeconds = Math.floor((target - now) / 1000);
+        } else if (type === "recurring") {
+          const recurringDate = timer.getAttribute("data-recurring-date");
+          const nextDate = getNextOccurrence(recurringDate);
+          deltaSeconds = Math.floor((nextDate - now) / 1000);
+        }
+
+        if (deltaSeconds < 0 && type !== "countup") {
+          output.textContent = "Event has passed";
+        } else {
+          output.textContent = formatDuration(Math.abs(deltaSeconds));
+        }
+      });
+    }
+
+    updateAllTimers();
+    setInterval(updateAllTimers, 1000);
+  </script>
+
+</body>
+</html>

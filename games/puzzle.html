@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sky & Trip's Jigsaws</title>
+  <style>
+    body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; background-color: #FFB6C1;}
+    #puzzle-container {
+    position: relative;
+    width: 90vw;
+    max-width: 500px;
+    aspect-ratio: 1 / 1;
+    border: 1px solid #333;
+    margin-top: 20px;
+    touch-action: none; /* prevent default touch behaviors */
+    }
+    .piece { position: absolute; border: 1px solid #ccc; cursor: grab; }
+    #controls { margin-top: 20px; }
+    @media (max-width: 600px) {
+    h1 {
+    margin-bottom: 30px;
+    font-size: 3rem;
+    color: #222;}
+    #timer { font-size: 1rem; }
+    button { font-size: 2.5rem; padding: 20px 30px; }
+    }
+
+    .home-button {
+  position: absolute;
+  top: 30px;
+  left: 30px;
+  padding: 0.5rem 1rem;
+  font-size: 0.95rem;
+  background-color: #fff;
+  border: 2px solid #ddd;
+  color: #333;
+  font-size: 1.4rem;
+  border-radius: 12px;
+  text-decoration: none;
+  outline-width: 2px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  transition: background-color 0.2s;
+  z-index: 1000;
+}
+
+.home-button:hover {
+    background-color: #f0f0f0;
+}
+
+  </style>
+</head>
+<body>
+
+<a href="../index.html" class="home-button">Return Home</a>
+
+<h1>Sky & Trip's Jigsaws</h1>
+
+<h3>(i reccomend moving all of the pieces out of the way first)</h3>
+<p id="timer">Time: 0s</p>
+<canvas id="source-canvas" style="display:none;"></canvas>
+<div id="puzzle-container"></div>
+
+<div id="controls">
+  <button id="next-level-btn" style="display:none;">Next Level</button>
+</div>
+
+<script>
+const imageList = [
+  'puzzleimages/img1.png',
+  'puzzleimages/img2.png',
+  'puzzleimages/img3.png',
+  'puzzleimages/img4.png',
+  'puzzleimages/img5.png',
+  'puzzleimages/img6.png',
+  'puzzleimages/img7.png',
+  'puzzleimages/img8.png',
+  'puzzleimages/img9.png'
+];
+
+const sourceCanvas = document.getElementById('source-canvas');
+const ctx = sourceCanvas.getContext('2d');
+const puzzleContainer = document.getElementById('puzzle-container');
+const timerDisplay = document.getElementById('timer');
+const nextBtn = document.getElementById('next-level-btn');
+
+let rows = 3, cols = 3; // Start with 3x3 = 9 pieces
+let pieceWidth = 0, pieceHeight = 0;
+let pieces = [];
+let timer = 0, interval;
+let piecesCorrect = 0;
+
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+
+function startTimer() {
+  timer = 0;
+  timerDisplay.textContent = 'Time: 0s';
+  clearInterval(interval);
+  interval = setInterval(() => {
+    timer++;
+    timerDisplay.textContent = `Time: ${timer}s`;
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(interval);
+}
+
+function createPuzzle(img) {
+  puzzleContainer.innerHTML = '';
+  pieces = [];
+  piecesCorrect = 0;
+
+  const containerSize = puzzleContainer.clientWidth;
+  pieceWidth = Math.floor(containerSize / cols);
+  pieceHeight = Math.floor(containerSize / rows);
+
+
+  sourceCanvas.width = pieceWidth * cols;
+  sourceCanvas.height = pieceHeight * rows;
+  ctx.drawImage(img, 0, 0, sourceCanvas.width, sourceCanvas.height);
+
+  const correctPositions = [];
+
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < cols; x++) {
+      correctPositions.push({ x: x * pieceWidth, y: y * pieceHeight });
+    }
+  }
+
+  shuffleArray(correctPositions);
+
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < cols; x++) {
+      const canvasPiece = document.createElement('canvas');
+      canvasPiece.width = pieceWidth;
+      canvasPiece.height = pieceHeight;
+      const pieceCtx = canvasPiece.getContext('2d');
+      pieceCtx.drawImage(sourceCanvas, x * pieceWidth, y * pieceHeight, pieceWidth, pieceHeight, 0, 0, pieceWidth, pieceHeight);
+
+      const div = document.createElement('div');
+      div.className = 'piece';
+      div.style.width = pieceWidth + 'px';
+      div.style.height = pieceHeight + 'px';
+
+      div.dataset.correctX = x * pieceWidth;
+      div.dataset.correctY = y * pieceHeight;
+
+      const randomPos = correctPositions.pop();
+      div.style.left = randomPos.x + 'px';
+      div.style.top = randomPos.y + 'px';
+
+      div.appendChild(canvasPiece);
+      puzzleContainer.appendChild(div);
+      pieces.push(div);
+    }
+  }
+
+  addDragHandlers();
+  startTimer();
+  nextBtn.style.display = 'none';
+}
+
+function addDragHandlers() {
+  pieces.forEach(piece => {
+    let offsetX = 0, offsetY = 0, isDragging = false;
+
+    const startDrag = (x, y) => {
+      isDragging = true;
+      const rect = piece.getBoundingClientRect();
+      offsetX = x - rect.left;
+      offsetY = y - rect.top;
+      piece.style.zIndex = 1000;
+    };
+
+    const moveDrag = (x, y) => {
+      if (!isDragging) return;
+      const containerRect = puzzleContainer.getBoundingClientRect();
+      piece.style.left = (x - containerRect.left - offsetX) + 'px';
+      piece.style.top = (y - containerRect.top - offsetY) + 'px';
+    };
+
+    const endDrag = () => {
+      if (!isDragging) return;
+      isDragging = false;
+      piece.style.zIndex = 1;
+
+      const correctX = parseInt(piece.dataset.correctX);
+      const correctY = parseInt(piece.dataset.correctY);
+      const currentX = parseInt(piece.style.left);
+      const currentY = parseInt(piece.style.top);
+
+      if (Math.abs(currentX - correctX) < 30 && Math.abs(currentY - correctY) < 30) {
+        piece.style.left = correctX + 'px';
+        piece.style.top = correctY + 'px';
+        piece.removeEventListener('mousedown', onMouseDown);
+        piece.removeEventListener('touchstart', onTouchStart);
+        piecesCorrect++;
+
+        if (piecesCorrect === pieces.length) {
+          stopTimer();
+          nextBtn.style.display = 'inline-block';
+        }
+      }
+    };
+
+    const onMouseDown = e => {
+      e.preventDefault();
+      startDrag(e.pageX, e.pageY);
+    };
+
+    const onTouchStart = e => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      startDrag(touch.pageX, touch.pageY);
+    };
+
+    piece.addEventListener('mousedown', onMouseDown);
+    piece.addEventListener('touchstart', onTouchStart);
+
+    document.addEventListener('mousemove', e => moveDrag(e.pageX, e.pageY));
+    document.addEventListener('mouseup', endDrag);
+
+    document.addEventListener('touchmove', e => {
+      const touch = e.touches[0];
+      moveDrag(touch.pageX, touch.pageY);
+    }, { passive: false });
+
+    document.addEventListener('touchend', endDrag);
+  });
+}
+
+
+function loadRandomImageAndStart() {
+  const randomImage = imageList[Math.floor(Math.random() * imageList.length)];
+  const img = new Image();
+  img.src = randomImage;
+  img.onload = () => createPuzzle(img);
+}
+
+nextBtn.addEventListener('click', () => {
+  // Increase difficulty
+  const newTotal = (rows * cols) + 7;
+  rows = Math.floor(Math.sqrt(newTotal));
+  cols = Math.ceil(newTotal / rows);
+  loadRandomImageAndStart();
+});
+
+loadRandomImageAndStart();
+</script>
+
+</body>
+</html>

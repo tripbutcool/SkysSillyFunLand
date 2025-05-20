@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sky's Silly Fun Land</title>
+  <link rel="stylesheet" href="indexstyle.css">
+</head>
+<body>
+
+    <img src="cornercat.png" alt="Corner Image" class="corner-image top-left">
+    <img src="cornercat.png" alt="Corner Image Flipped" class="corner-image top-right">
+
+  <h1>Sky's Silly Fun Land</h1>
+
+  <div class="game-grid">
+    <a href="games/skyle.html" class="game-link">
+      <div class="game-box">Skyle</div>
+    </a>
+    <a href="games/puzzle.html" class="game-link">
+      <div class="game-box">Goofy Puzzles</div>
+    </a>
+    <a href="games/yap.html" class="game-link">
+      <div class="game-box">Yap Form</div>
+    </a>
+    <a href="games/count.html" class="game-link">
+      <div class="game-box">Special Countdowns</div>
+    </a>
+  </div>
+  <br>
+  <br>
+  <h2>I will add more things later prob -Trip 5/20/25</h2>
+
+  <footer>
+    <small>&copy; <span id="currentYear"></span>, The Silly Company</small>
+  </footer>
+  
+  <script>
+    document.getElementById("currentYear").textContent = new Date().getFullYear();
+  </script>
+
+</body>
+</html>

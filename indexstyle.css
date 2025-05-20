@@ -1,0 +1,91 @@
+*{
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    margin-bottom: 50px;
+  }
+
+  .corner-image {
+    position: absolute;
+    top: 0;
+    width: 500px; /* adjust size as needed */
+    height: auto;
+    z-index: 1000;
+  }
+
+  .top-left {
+    left: 0;
+  }
+
+  .top-right {
+    right: 0;
+    transform: scaleX(-1); /* flip horizontally */
+  }
+
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #FFB6C1;
+    color: #333;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  h1 {
+    margin-bottom: 30px;
+    font-size: 3rem;
+    color: #222;
+  }
+
+  .game-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+    width: 100%;
+    max-width: 1000px;
+  }
+
+  .game-box {
+    background-color: #fff;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    padding: 30px 20px;
+    text-align: center;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .game-box:hover {
+    transform: scale(1.05);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.08);
+    border-color: #aaa;
+  }
+
+  a.game-link {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  /* Optional: subtle background color change on hover */
+  .game-box:hover {
+    background-color: #f0f0f0;
+  }
+
+  /* Responsive tweaks */
+  @media (max-width: 600px) {
+    h1 {
+      font-size: 2rem;
+    }
+  }
+
+  #footer {
+    position: fixed;
+    height: 50px;
+    background-color: red;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    margin-bottom: 0px;
+}
